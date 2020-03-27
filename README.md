@@ -1,12 +1,12 @@
 # SQLite batch connection support preview 2020-01
 
-Author: Christopher J. Brody <chris.brody+brodybits@gmail.com>
+**Author:** Christopher J. Brody <mailto:chris.brody+brodybits@gmail.com>
 
-LICENSE: MIT with commercial license option
+**LICENSE:** MIT with commercial license option
 
 Low-level SQLite connection library for C, C++, Objective-C, and Java
 
-to support SQLite batch processing in higher-level app frameworks such as Cordova
+to support SQLite batch processing in higher-level app frameworks such as Apache Cordova
 
 with demonstration of use in an extremely simple Cordova plugin for mobile apps in JavaScript
 
@@ -36,7 +36,7 @@ with support available here: <https://github.com/brodybits/ask-me-anything/issue
 
 - only tested with in-memory databases (<https://www.sqlite.org/inmemorydb.html>)
 - not able to close database connection and release internal resources
-- hard limit of 5000 open SQLite database connections, which is due to the design
+- hard limit of 5000 open SQLite database connections, due to this initial implementation of the design
 - The API was not designed to support parallel database access through the same database connection. The workaround is to open multiple SQLite connections to the same database file name.
 - Background threading would need to be done in a higher-level component.
 - The required `scc_init()` initialization function should be called from the main thread upon startup, is __NOT__ thread-safe.
@@ -206,7 +206,7 @@ column index: 1
   double column value: -123.456789
 ```
 
-### Cordova demo app
+### Apache Cordova demo app
 
 ```js
 document.addEventListener('deviceready', onReady)
