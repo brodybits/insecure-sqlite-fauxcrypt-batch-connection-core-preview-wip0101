@@ -10,7 +10,19 @@ function log (text) {
 function onReady () {
   log('deviceready received')
 
-  window.openDatabaseConnection(':memory:', 2, openCallback)
+  window.sqliteStorageFile.resolveAbsolutePath({
+    name: 'demo.db',
+    // TEMPORARY & DEPRECATED value, as needed for iOS & macOS ("osx"):
+    location: 2
+  }, function(path) {
+    console.log('database file path: ' + path)
+
+    // SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE
+    // ref: https://www.sqlite.org/c3ref/open.html
+    const flags = 6
+
+    window.openDatabaseConnection(path, flags, openCallback)
+  })
 }
 
 function openCallback (connectionId) {
@@ -22,6 +34,7 @@ function openCallback (connectionId) {
       ['SELECT ?, -?, LOWER(?), UPPER(?)', [null, 123.456789, 'ABC', 'Text']],
       ['SLCT 1', []],
       ['SELECT ?', ['OK', 'out of bounds parameter']],
+      ['DROP TABLE IF EXISTS Testing', []],
       ['CREATE TABLE Testing (data NOT NULL)', []],
       ["INSERT INTO Testing VALUES ('test data')", []],
       ['INSERT INTO Testing VALUES (null)', []],

@@ -34,7 +34,7 @@ with support available here: <https://github.com/brodybits/ask-me-anything/issue
 
 ## Some known limitations
 
-- only tested with in-memory databases (<https://www.sqlite.org/inmemorydb.html>)
+- In case of Apache Cordova, a helper plugin such as `cordova-sqlite-storage-file` should be used to resolve an absolute database file path before opening it.
 - not able to close database connection and release internal resources
 - hard limit of 5000 open SQLite database connections, due to this initial implementation of the design
 - The API was not designed to support parallel database access through the same database connection. The workaround is to open multiple SQLite connections to the same database file name.
@@ -208,6 +208,8 @@ column index: 1
 
 ### Apache Cordova demo app
 
+Demonstrates using accessing a database file on Apache Cordova, with a little help from `cordova-sqlite-storage-file`:
+
 ```js
 document.addEventListener('deviceready', onReady)
 
@@ -221,7 +223,19 @@ function log (text) {
 function onReady () {
   log('deviceready received')
 
-  window.openDatabaseConnection(':memory:', 2, openCallback)
+  window.sqliteStorageFile.resolveAbsolutePath({
+    name: 'demo.db',
+    // TEMPORARY & DEPRECATED value, as needed for iOS & macOS ("osx"):
+    location: 2
+  }, function(path) {
+    console.log('database file path: ' + path)
+
+    // SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE
+    // ref: https://www.sqlite.org/c3ref/open.html
+    const flags = 6
+
+    window.openDatabaseConnection(path, flags, openCallback)
+  })
 }
 
 function openCallback (connectionId) {
@@ -233,6 +247,7 @@ function openCallback (connectionId) {
       ['SELECT ?, -?, LOWER(?), UPPER(?)', [null, 123.456789, 'ABC', 'Text']],
       ['SLCT 1', []],
       ['SELECT ?', ['OK', 'out of bounds parameter']],
+      ['DROP TABLE IF EXISTS Testing', []],
       ['CREATE TABLE Testing (data NOT NULL)', []],
       ["INSERT INTO Testing VALUES ('test data')", []],
       ['INSERT INTO Testing VALUES (null)', []],
