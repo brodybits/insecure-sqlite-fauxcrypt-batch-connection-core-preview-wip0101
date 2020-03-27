@@ -1,10 +1,14 @@
-# SQLite batch connection support preview 2020-01
+# SQLite crypto connection core preview 2020-XX-XX
+
+based on: sqlite-batch-connection-support-preview-2020-01
 
 **Author:** Christopher J. Brody <mailto:chris.brody+brodybits@gmail.com>
 
 **LICENSE:** MIT with commercial license option
 
-Low-level SQLite connection library for C, C++, Objective-C, and Java
+Low-level SQLite connection library for C, C++, Objective-C, and Java, with API enhancements to support use of crypto keys
+
+XXX TODO TEST use of `sqlite3_key` function
 
 to support SQLite batch processing in higher-level app frameworks such as Apache Cordova
 

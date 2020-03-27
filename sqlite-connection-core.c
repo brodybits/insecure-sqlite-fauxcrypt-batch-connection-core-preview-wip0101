@@ -103,6 +103,22 @@ int scc_open_connection(const char * filename, int flags)
   }
 }
 
+int scc_key(int connection_id, const char * key)
+{
+#ifdef NO_SCC_KEY
+  // SIGNAL ERROR:
+  return -1;
+#else
+  if (connection_id < 0) {
+    // BOGUS
+    return 0;
+  } else {
+    scc_record_ref r = &scc_record_list[connection_id];
+    return sqlite3_key(r->db, key, strlen(key));
+  }
+#endif
+}
+
 int scc_begin_statement(int connection_id, const char * statement)
 {
   if (connection_id < 0) {

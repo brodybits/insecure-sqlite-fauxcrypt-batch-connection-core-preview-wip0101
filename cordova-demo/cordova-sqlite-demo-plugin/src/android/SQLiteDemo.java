@@ -26,8 +26,13 @@ public class SQLiteDemo extends CordovaPlugin {
     try {
       final String filename = args.getString(0);
       final int flags = args.getInt(1);
+      final String key = args.getString(2);
 
       final int mydbc = SCCoreGlue.scc_open_connection(filename, flags);
+
+      // XXX TBD IGNORE RESULT FOR NOW:
+      SCCoreGlue.scc_key(mydbc, key);
+
       cbc.success(mydbc);
     } catch(Exception e) {
       // NOT EXPECTED - internal error:

@@ -21,7 +21,7 @@ function onReady () {
     // ref: https://www.sqlite.org/c3ref/open.html
     const flags = 6
 
-    window.openDatabaseConnection(path, flags, openCallback)
+    window.openDatabaseConnection(path, flags, 'demo-password', openCallback)
   })
 }
 
