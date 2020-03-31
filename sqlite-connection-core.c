@@ -10,7 +10,14 @@
 
 #include <math.h>
 
+#include <string.h>
+
 #include "sqlite3.h"
+
+// **Ugly hack** to make Xcode happy for iOS:
+#ifdef SCC_INCLUDE_FAUXCRYPT_KEY
+#include "sqlite-fauxcrypt-key.h"
+#endif
 
 #define DEFAULT_MAX_SCC_CONNECTIONS 5000
 
@@ -126,6 +133,22 @@ int scc_open_connection(const char * filename, int flags)
   }
 
   return (open_result == SQLITE_OK) ? connection_id : -open_result;
+}
+
+int scc_key(int connection_id, const char * key)
+{
+#ifdef NO_SCC_CRYPTO_KEY
+  // SIGNAL ERROR:
+  return -1;
+#else
+  if (connection_id < 0) {
+    // BOGUS
+    return 0;
+  } else {
+    scc_record_ref r = &scc_record_list[connection_id];
+    return sqlite3_key(r->db, key, strlen(key));
+  }
+#endif
 }
 
 int scc_begin_statement(int connection_id, const char * statement)

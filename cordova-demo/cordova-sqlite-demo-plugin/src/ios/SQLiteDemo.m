@@ -25,6 +25,8 @@
 
   const int flags = [(NSNumber *)[_args objectAtIndex: 1] intValue];
 
+  const char * key = [(NSString *)[_args objectAtIndex: 2] cString];
+
   const int connection_id = scc_open_connection(filename, flags);
 
   if (connection_id < 0) {
@@ -32,6 +34,15 @@
       [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR
                         messageAsString: @"open error"];
     [self.commandDelegate sendPluginResult: openErrorResult
+                                callbackId: commandInfo.callbackId];
+    return;
+  }
+
+  if (scc_key(connection_id, key) != 0) {
+    CDVPluginResult * testResult =
+      [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR
+                        messageAsString: @"key error"];
+    [self.commandDelegate sendPluginResult: testResult
                                 callbackId: commandInfo.callbackId];
     return;
   }

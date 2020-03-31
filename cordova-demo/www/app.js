@@ -11,8 +11,10 @@ function log (text) {
 
 const DEMO_DATABASE_NAME = 'demo.db'
 
+const CORRECT_KEY = 'correct'
+
 // utility function:
-function openFileDatabaseConnection (name, openCallback) {
+function openFileDatabaseWithKey (name, key, openCallback, errorcb) {
   window.sqliteStorageFile.resolveAbsolutePath(
     {
       name: name,
@@ -27,7 +29,7 @@ function openFileDatabaseConnection (name, openCallback) {
       const flags = 6
 
       // open with SQLite file path & flags:
-      window.openDatabaseConnection(path, flags, openCallback)
+      window.openDatabaseConnection(path, flags, key, openCallback, errorcb)
     }
   )
 }
@@ -35,8 +37,7 @@ function openFileDatabaseConnection (name, openCallback) {
 function onReady () {
   log('deviceready event received')
 
-  // for SQLite database file:
-  openFileDatabaseConnection(DEMO_DATABASE_NAME, openCallback)
+  openFileDatabaseWithKey(DEMO_DATABASE_NAME, CORRECT_KEY, openCallback)
 }
 
 function openCallback (connectionId) {
@@ -46,6 +47,7 @@ function openCallback (connectionId) {
   window.openDatabaseConnection(
     'dummy.db',
     0,
+    '',
     function (_ignored) {
       log('FAILURE - unexpected open success callback received')
     },
@@ -85,11 +87,33 @@ function batchCallback (batchResults) {
   log('received batch results')
   log(JSON.stringify(batchResults))
 
-  startReaderDemo()
+  startReaderDemoWithWrongKey()
 }
 
-function startReaderDemo () {
-  openFileDatabaseConnection(DEMO_DATABASE_NAME, function (id) {
+function startReaderDemoWithWrongKey () {
+  openFileDatabaseWithKey(
+    DEMO_DATABASE_NAME,
+    'wrong',
+    function (id) {
+      // This could happen with SQLCipher
+      log('connection id with wrong key: ' + id)
+      // not expected to work with wrong key:
+      window.executeBatch(id, [['SELECT * FROM Testing', []]], function (res) {
+        log(JSON.stringify(res))
+        // continue with another connection id with correct key
+        startReaderDemoWithCorrectKey()
+      })
+    },
+    function (e) {
+      log('OK - error as expected with wrong key')
+      // continue with another connection id with correct key
+      startReaderDemoWithCorrectKey()
+    }
+  )
+}
+
+function startReaderDemoWithCorrectKey () {
+  openFileDatabaseWithKey(DEMO_DATABASE_NAME, CORRECT_KEY, function (id) {
     log('read from another connection id: ' + id)
 
     window.executeBatch(id, [['SELECT * FROM Testing', []]], function (res) {

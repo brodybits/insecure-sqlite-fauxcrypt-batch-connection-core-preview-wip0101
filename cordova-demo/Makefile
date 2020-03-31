@@ -10,9 +10,10 @@ $(SQLITE_AMALGAMATION)/sqlite3.c:
 prepare-plugin: $(SQLITE_AMALGAMATION)/sqlite3.c
 	mkdir -p cordova-sqlite-demo-plugin/dependencies
 	cp ../sccglue/java/io/sqlc/SCCoreGlue.java cordova-sqlite-demo-plugin/dependencies
-	cp ../sccglue/sqlite-connection-core-glue.jar cordova-sqlite-demo-plugin/dependencies
+	cp ../sccglue/sqlite-fauxcrypt-connection-core-glue.jar cordova-sqlite-demo-plugin/dependencies
 	cp $(SQLITE_AMALGAMATION)/sqlite3.* cordova-sqlite-demo-plugin/dependencies
 	cp ../sqlite-connection-core.[hc] cordova-sqlite-demo-plugin/dependencies
+	cp ../sqlite-fauxcrypt-key.[hc] cordova-sqlite-demo-plugin/dependencies
 
 prepare-app: prepare-plugin
 	cordova plugin add ./cordova-sqlite-demo-plugin

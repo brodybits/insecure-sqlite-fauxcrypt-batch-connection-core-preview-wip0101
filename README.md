@@ -1,8 +1,18 @@
-# SQLite batch connection support preview 2020-01
+# SQLite fauxcrypt batch connection core preview 2020-01
+
+using fake `sqlite3_key` for testing purposes
+
+based on: [`github:brodybits/sqlite-batch-connection-support-preview-2020-01`](https://github.com/brodybits/sqlite-batch-connection-support-preview-2020-01)
 
 **Author:** Christopher J. Brody <mailto:chris.brody+brodybits@gmail.com>
 
 **License:** MIT with commercial license option available
+
+**IMPORTANT EXPORT NOTICE** - see the following:
+
+- <https://www.eff.org/deeplinks/2019/08/us-export-controls-and-published-encryption-source-code-explained>
+- <https://www.natlawreview.com/article/are-you-exporter-you-might-be-often-overlooked-controls-software-encryption-capacity>
+- <https://github.com/brodybits/ask-me-anything/issues/20>
 
 **IMPORTANT CORRUPTION NOTICE 1:** SQLite database corruption is possible if accessed from multiple libraries, for example using both this library and built-in `android.sqlite.database` on Android ref:
 - <https://ericsink.com/entries/multiple_sqlite_problem.html>
@@ -16,7 +26,7 @@
 
 ## About
 
-Low-level SQLite connection library for C, C++, Objective-C, and Java
+Low-level SQLite connection library for C, C++, Objective-C, and Java, with API and internal enhancements to support use of encryption keys, through `sqlite3_key` function call - with fauxcrypt version included (intended to enable straightforward adaptation for *real* encryption using a solution such as SQLCipher)
 
 to support SQLite batch processing in higher-level app frameworks such as Apache Cordova
 
@@ -30,6 +40,8 @@ with support available here: <https://github.com/brodybits/ask-me-anything/issue
 
 - `sqlite-connection-core.h` - main low-level C API header
 - `sqlite-connection-core.c` - main low-level C library source module
+- `sqlite-fauxcrypt-key.h` - *fake* `sqlite3_key` build header (requires `-DSQLITE_FAUXCRYPT_KEY_ENABLED` build setting)
+- `sqlite-fauxcrypt-key.c` - *fake* `sqlite3_key` source module (requires `-DSQLITE_FAUXCRYPT_KEY_ENABLED` build setting)
 - `ctest` - test of main low-level C library
 - `sccglue` - low-level Java API wrapper generated with help from GlueGen from jogamp.org, with JNI test
 - `cordova-demo` - extremely simple Cordova demo app for testing, reformatted by `prettier-standard`, includes Cordova demo plugin:
@@ -77,6 +89,12 @@ static void demo() {
 
   if (connection_id < 0) {
     fprintf(stderr, "could not open connection");
+    exit(1);
+  }
+
+  result_check = scc_key(connection_id, "correct");
+  if (result_check != 0) {
+    fprintf(stderr, "could not use password key");
     exit(1);
   }
 
@@ -151,6 +169,11 @@ class SQLiteDemo {
 
     int resultCheck;
 
+    resultCheck = SCCoreGlue.scc_key(connection_id, "correct")
+    if (resultCheck != 0) {
+      throw new RuntimeException("could not use password key");
+    }
+
     resultCheck = SCCoreGlue.scc_begin_statement(connection_id,
       "SELECT UPPER(?) AS result1, -? as result2");
     if (resultCheck != 0) {
@@ -198,7 +221,7 @@ class SQLiteDemo {
   }
 
   static {
-    System.loadLibrary("sqlite-connection-core-glue");
+    System.loadLibrary("sqlite-fauxcrypt-connection-core-glue");
     SCCoreGlue.scc_init();
   }
 }
@@ -220,7 +243,7 @@ column index: 1
 
 ### Apache Cordova demo app
 
-Demonstrates using accessing a database file on Apache Cordova, with a little help from `cordova-sqlite-storage-file`:
+Demonstrates using accessing a database file with an encryption key on Apache Cordova, with a little help from `cordova-sqlite-storage-file`:
 
 ```js
 document.addEventListener('deviceready', onReady)
@@ -236,8 +259,10 @@ function log (text) {
 
 const DEMO_DATABASE_NAME = 'demo.db'
 
+const CORRECT_KEY = 'correct'
+
 // utility function:
-function openFileDatabaseConnection (name, openCallback) {
+function openFileDatabaseWithKey (name, key, openCallback, errorcb) {
   window.sqliteStorageFile.resolveAbsolutePath(
     {
       name: name,
@@ -252,7 +277,7 @@ function openFileDatabaseConnection (name, openCallback) {
       const flags = 6
 
       // open with SQLite file path & flags:
-      window.openDatabaseConnection(path, flags, openCallback)
+      window.openDatabaseConnection(path, flags, key, openCallback, errorcb)
     }
   )
 }
@@ -260,8 +285,7 @@ function openFileDatabaseConnection (name, openCallback) {
 function onReady () {
   log('deviceready event received')
 
-  // for SQLite database file:
-  openFileDatabaseConnection(DEMO_DATABASE_NAME, openCallback)
+  openFileDatabaseWithKey(DEMO_DATABASE_NAME, CORRECT_KEY, openCallback)
 }
 
 function openCallback (connectionId) {
@@ -271,6 +295,7 @@ function openCallback (connectionId) {
   window.openDatabaseConnection(
     'dummy.db',
     0,
+    '',
     function (_ignored) {
       log('FAILURE - unexpected open success callback received')
     },
@@ -310,11 +335,33 @@ function batchCallback (batchResults) {
   log('received batch results')
   log(JSON.stringify(batchResults))
 
-  startReaderDemo()
+  startReaderDemoWithWrongKey()
 }
 
-function startReaderDemo () {
-  openFileDatabaseConnection(DEMO_DATABASE_NAME, function (id) {
+function startReaderDemoWithWrongKey () {
+  openFileDatabaseWithKey(
+    DEMO_DATABASE_NAME,
+    'wrong',
+    function (id) {
+      // This could happen with SQLCipher
+      log('connection id with wrong key: ' + id)
+      // not expected to work with wrong key:
+      window.executeBatch(id, [['SELECT * FROM Testing', []]], function (res) {
+        log(JSON.stringify(res))
+        // continue with another connection id with correct key
+        startReaderDemoWithCorrectKey()
+      })
+    },
+    function (e) {
+      log('OK - error as expected with wrong key')
+      // continue with another connection id with correct key
+      startReaderDemoWithCorrectKey()
+    }
+  )
+}
+
+function startReaderDemoWithCorrectKey () {
+  openFileDatabaseWithKey(DEMO_DATABASE_NAME, CORRECT_KEY, function (id) {
     log('read from another connection id: ' + id)
 
     window.executeBatch(id, [['SELECT * FROM Testing', []]], function (res) {

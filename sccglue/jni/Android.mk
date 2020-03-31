@@ -10,15 +10,18 @@ include $(LOCAL_PATH)/../../sqlite-download.mk
 
 include $(LOCAL_PATH)/../../sqlite-build.mk
 
+include $(LOCAL_PATH)/../../sqlite-crypto-build.mk
+
 # FUTURE TBD (??):
 # LOCAL_LDLIBS := -llog
 
-LOCAL_MODULE := sqlite-connection-core-glue
+LOCAL_MODULE := sqlite-fauxcrypt-connection-core-glue
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../$(SQLITE_AMALGAMATION)
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../..
 
 LOCAL_CFLAGS += $(SQLITE_CFLAGS)
+LOCAL_CFLAGS += $(SQLITE_CRYPTO_CFLAGS)
 
 LOCAL_SRC_FILES := sccglue_jni_all.c
 
