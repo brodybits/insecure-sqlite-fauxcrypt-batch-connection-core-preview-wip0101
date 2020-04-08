@@ -1,6 +1,8 @@
-# SQLite fauxcrypt batch connection core preview 2020-01
+# INSECURE SQLite fauxcrypt batch connection core preview 2020-01
 
-using fake `sqlite3_key` for testing purposes
+INSECURE due to use of a key function that does not apply any encryption
+
+(using fake `sqlite3_key` for testing purposes; export notices may still apply with the functionality)
 
 based on: [`github:brodybits/sqlite-batch-connection-support-preview-2020-01`](https://github.com/brodybits/sqlite-batch-connection-support-preview-2020-01)
 
