@@ -20,7 +20,7 @@ GLUEGEN_FIX_JNI_COMMAND := \
 	sed -i.orig "s/  *$$//g" $(GLUEGEN_FIX_JNI_FILE)
 GLUEGEN_REMOVE_JNI_ORIG := rm -rf $(GLUEGEN_FIX_JNI_FILE).orig
 
-NDK_JAR_FILENAME := sqlite-connection-core-glue.jar
+NDK_JAR_FILENAME := sqlite-fake-crypto-connection-core-glue.jar
 
 include ../sqlite-download.mk
 
