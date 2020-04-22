@@ -428,6 +428,32 @@ scc_long_long scc_get_column_long(int connection_id, int column)
   }
 }
 
+const char * scc_get_column_long_as_text(int connection_id, int column)
+{
+  static char buffer[100]; // EXTRA-LARGE, EXTRA-SAFE BUT NOT THREAD-SAFE
+
+  if (connection_id < 0) {
+    // BOGUS
+    return 0;
+  } else {
+    scc_record_ref r = &scc_record_list[connection_id];
+    sqlite3_stmt * st;
+    scc_long_long value;
+
+    START_REC_ST_MUTEX(r);
+    st = r->_st;
+    if (st == NULL) {
+      // BOGUS
+      value = 0;
+    } else {
+      value = sqlite3_column_int64(st, column);
+    }
+    END_REC_ST_MUTEX(r);
+    sprintf(buffer, "%lld", value);
+    return buffer;
+  }
+}
+
 int scc_end_statement(int connection_id)
 {
   if (connection_id < 0) {

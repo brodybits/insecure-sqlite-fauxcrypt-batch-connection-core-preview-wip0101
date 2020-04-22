@@ -378,6 +378,11 @@ static void test07() {
     scc_get_column_long(connection_id, 1)
     );
 
+  TEST_ASSERT_STRING_EQUALS(
+    "-1234567890123456789",
+    scc_get_column_long_as_text(connection_id, 1)
+    );
+
   TEST_ASSERT_INT_EQUALS(0, // SQLite OK
     scc_end_statement(connection_id)
     );

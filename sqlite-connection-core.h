@@ -50,6 +50,9 @@ double scc_get_column_double(int connection_id, int column);
 
 scc_long_long scc_get_column_long(int connection_id, int column);
 
+/** TEST FUNCTION NOT THREAD-SAFE */
+const char * scc_get_column_long_as_text(int connection_id, int column);
+
 int scc_get_total_changes(int connection_id);
 
 int scc_get_last_insert_rowid(int connection_id);

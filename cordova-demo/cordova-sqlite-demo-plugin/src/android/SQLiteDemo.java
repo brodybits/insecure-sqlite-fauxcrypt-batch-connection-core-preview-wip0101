@@ -125,6 +125,8 @@ public class SQLiteDemo extends CordovaPlugin {
 
                 if (type == SCCoreGlue.SCC_COLUMN_TYPE_INTEGER) {
                   row.put(SCCoreGlue.scc_get_column_long(mydbc, col));
+                  row.put(SCCoreGlue.scc_get_column_long_as_text(mydbc, col));
+                  row.put("got long: " + SCCoreGlue.scc_get_column_long(mydbc, col));
                 } else if (type == SCCoreGlue.SCC_COLUMN_TYPE_FLOAT) {
                   row.put(SCCoreGlue.scc_get_column_double(mydbc, col));
                 } else if (type == SCCoreGlue.SCC_COLUMN_TYPE_NULL) {
