@@ -31,11 +31,16 @@ public class SQLiteDemo extends CordovaPlugin {
 
       final int flags = options.getInt("flags");
 
+      final String key = options.getString("key");
+
       final int mydbc = SCCoreGlue.scc_open_connection(pathname, flags);
 
       if (mydbc < 0) {
         cbc.error("open error: " + -mydbc);
       } else {
+        if (SCCoreGlue.scc_key(mydbc, key) != 0)
+          throw new RuntimeException("password key error");
+
         cbc.success(mydbc);
       }
     } catch(Exception e) {
@@ -172,7 +177,7 @@ public class SQLiteDemo extends CordovaPlugin {
   }
 
   static {
-    System.loadLibrary("sqlite-connection-core-glue");
+    System.loadLibrary("sqlite-fake-crypto-connection-core-glue");
     SCCoreGlue.scc_init();
   }
 }

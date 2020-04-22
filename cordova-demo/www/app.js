@@ -15,7 +15,14 @@ const DATABASE_FILE_NAME = 'demo.db'
 // ref: https://www.sqlite.org/c3ref/open.html
 const OPEN_DATABASE_FLAGS = 6
 
-function openFileDatabaseConnection (name, openCallback, errorCallback) {
+const CORRECT_KEY = 'correct'
+
+function openFileDatabaseConnectionWithKey (
+  name,
+  key,
+  openCallback,
+  errorCallback
+) {
   window.sqliteStorageFile.resolveAbsolutePath(
     {
       name: name,
@@ -26,7 +33,7 @@ function openFileDatabaseConnection (name, openCallback, errorCallback) {
       log('database file path: ' + path)
 
       window.sqliteBatchConnection.openDatabaseConnection(
-        { path: path, flags: OPEN_DATABASE_FLAGS },
+        { path: path, flags: OPEN_DATABASE_FLAGS, key: key },
         openCallback,
         errorCallback
       )
@@ -34,7 +41,12 @@ function openFileDatabaseConnection (name, openCallback, errorCallback) {
   )
 }
 
-function openCacheFileDatabaseConnection (name, openCallback, errorCallback) {
+function openCacheFileDatabaseConnectionWithKey (
+  name,
+  key,
+  openCallback,
+  errorCallback
+) {
   window.resolveLocalFileSystemURL(
     // portable across Android, iOS, & macOS ("osx"):
     cordova.file.cacheDirectory,
@@ -49,7 +61,7 @@ function openCacheFileDatabaseConnection (name, openCallback, errorCallback) {
       log('database cache file path: ' + path)
 
       window.sqliteBatchConnection.openDatabaseConnection(
-        { path: path, flags: OPEN_DATABASE_FLAGS },
+        { path: path, flags: OPEN_DATABASE_FLAGS, key: key },
         openCallback,
         errorCallback
       )
@@ -60,12 +72,14 @@ function openCacheFileDatabaseConnection (name, openCallback, errorCallback) {
 function onReady () {
   log('deviceready event received')
 
-  // for SQLite database file:
-  openFileDatabaseConnection(DATABASE_FILE_NAME, openCallback, function (
-    error
-  ) {
-    log('UNEXPECTED OPEN ERROR: ' + error)
-  })
+  openFileDatabaseConnectionWithKey(
+    DATABASE_FILE_NAME,
+    CORRECT_KEY,
+    openCallback,
+    function (error) {
+      log('UNEXPECTED OPEN ERROR: ' + error)
+    }
+  )
 }
 
 function openCallback (connectionId) {
@@ -73,7 +87,7 @@ function openCallback (connectionId) {
 
   // ERROR TEST - file name with incorrect flags:
   window.sqliteBatchConnection.openDatabaseConnection(
-    { path: 'dummy.db', flags: 0 },
+    { path: 'dummy.db', flags: 0, key: '' },
     function (_ignored) {
       log('FAILURE - unexpected open success callback received')
     },
@@ -117,12 +131,35 @@ function batchCallback (batchResults) {
   log('received batch results')
   log(JSON.stringify(batchResults))
 
-  startReaderDemo()
+  startReaderDemoWithWrongKey()
 }
 
-function startReaderDemo () {
-  openFileDatabaseConnection(
+function startReaderDemoWithWrongKey () {
+  openFileDatabaseConnectionWithKey(
     DATABASE_FILE_NAME,
+    'wrong password',
+    function (id) {
+      // This could happen with SQLCipher
+      log('connection id with wrong key: ' + id)
+      // not expected to work with wrong key:
+      window.executeBatch(id, [['SELECT * FROM Testing', []]], function (res) {
+        log(JSON.stringify(res))
+        // continue with another connection id with correct key
+        startReaderDemoWithCorrectKey()
+      })
+    },
+    function (e) {
+      log('OK - error as expected with wrong key')
+      // continue with another connection id with correct key
+      startReaderDemoWithCorrectKey()
+    }
+  )
+}
+
+function startReaderDemoWithCorrectKey () {
+  openFileDatabaseConnectionWithKey(
+    DATABASE_FILE_NAME,
+    CORRECT_KEY,
     function (id) {
       log('read from another connection id: ' + id)
 
@@ -142,8 +179,9 @@ function startReaderDemo () {
 }
 
 function startCacheFileDemo () {
-  openCacheFileDatabaseConnection(
+  openCacheFileDatabaseConnectionWithKey(
     DATABASE_FILE_NAME,
+    CORRECT_KEY,
     function (id) {
       log('cache file database connection id: ' + id)
 
