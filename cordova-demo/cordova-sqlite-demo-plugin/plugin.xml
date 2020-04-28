@@ -22,7 +22,7 @@
     </config-file>
     <source-file src="src/android/SQLiteDemo.java" target-dir="src/com/demo" />
     <source-file src="dependencies/SCCoreGlue.java" target-dir="src/io/sqlc" />
-    <lib-file src="dependencies/sqlite-connection-core-glue.jar" />
+    <lib-file src="dependencies/sqlite-fake-crypto-connection-core-glue.jar" />
   </platform>
 
   <platform name="ios">
@@ -42,7 +42,17 @@
         -DHAVE_UTIME
         " />
     <header-file src="dependencies/sqlite-connection-core.h" />
-    <source-file src="dependencies/sqlite-connection-core.c" />
+    <!-- with ugly SCC_INCLUDE_FAKE_CRYPTO_KEY hack to make Xcode happy on iOS -->
+    <source-file
+      src="dependencies/sqlite-connection-core.c"
+      compiler-flags="
+        -DSCC_INCLUDE_FAKE_CRYPTO_KEY
+        -DSQLITE_FAKE_CRYPTO_KEY_ENABLED
+        " />
+    <header-file src="dependencies/sqlite-fake-crypto-key.h" />
+    <source-file
+      src="dependencies/sqlite-fake-crypto-key.c"
+      compiler-flags="-DSQLITE_FAKE_CRYPTO_KEY_ENABLED" />
   </platform>
 
   <platform name="osx">
@@ -63,5 +73,9 @@
         " />
     <header-file src="dependencies/sqlite-connection-core.h" />
     <source-file src="dependencies/sqlite-connection-core.c" />
+    <header-file src="dependencies/sqlite-fake-crypto-key.h" />
+    <source-file
+      src="dependencies/sqlite-fake-crypto-key.c"
+      compiler-flags="-DSQLITE_FAKE_CRYPTO_KEY_ENABLED" />
   </platform>
 </plugin>
