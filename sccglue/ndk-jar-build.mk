@@ -1,7 +1,7 @@
 # based on Makefile from:
 # https://github.com/sqlg/SQLiteGlue-core
 
-NDK_JAR_FILENAME := sqlite-connection-core-glue.jar
+NDK_JAR_FILENAME := sqlite-fake-crypto-connection-core-glue.jar
 
 include ../sqlite-download.mk
 

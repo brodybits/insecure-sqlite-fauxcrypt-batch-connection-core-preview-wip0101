@@ -22,6 +22,8 @@ void scc_init();
 
 int scc_open_connection(const char * full_name, int flags);
 
+int scc_key(int connection_id, const char * key);
+
 int scc_begin_statement(int connection_id, const char * statement);
 
 int scc_bind_text(int connection_id, int index, const char * text);

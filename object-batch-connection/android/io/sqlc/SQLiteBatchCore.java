@@ -148,7 +148,7 @@ public class SQLiteBatchCore {
   }
 
   static {
-    System.loadLibrary("sqlite-connection-core-glue");
+    System.loadLibrary("sqlite-fake-crypto-connection-core-glue");
     SCCoreGlue.scc_init();
   }
 }

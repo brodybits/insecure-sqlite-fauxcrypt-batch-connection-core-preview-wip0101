@@ -3,6 +3,8 @@ package com.demo;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import io.sqlc.SCCoreGlue;
+
 import io.sqlc.SQLiteBatchCore;
 
 import org.apache.cordova.CallbackContext;
@@ -36,8 +38,14 @@ public class SQLiteDemoPlugin extends CordovaPlugin {
 
       final int flags = options.getInt("flags");
 
+      // password key - empty string if not present
+      final String key = options.optString("key");
+
       SQLiteBatchCore.openBatchConnection(fullName, flags, new SQLiteBatchCore.OpenCallbacks() {
         public void success(int connectionId) {
+          if (key.length() > 0 && SCCoreGlue.scc_key(connectionId, key) != 0)
+            throw new RuntimeException("password key error");
+
           cbc.success(connectionId);
         }
         public void error(String message) {
