@@ -2,6 +2,8 @@
 
 #import "SQLiteBatchCore.h"
 
+#include "sqlite-connection-core.h"
+
 @interface SQLiteDemoPlugin : CDVPlugin
 
 - (void) openDatabaseConnection: (CDVInvokedUrlCommand *) commandInfo;
@@ -22,12 +24,21 @@
 
   const int flags = [(NSNumber *)[options valueForKey: @"flags"] intValue];
 
+  // password key - null or empty if not present
+  const char * key = [(NSString *)[options valueForKey: @"key"] cString];
+
   const int dbid = [SQLiteBatchCore openBatchConnection: fullName flags: flags];
 
   if (dbid < 0) {
     CDVPluginResult * openErrorResult =
       [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR
                         messageAsString: @"open error"];
+    [self.commandDelegate sendPluginResult: openErrorResult
+                                callbackId: commandInfo.callbackId];
+  } else if (key != NULL && key[0] != '\0' && scc_key(dbid, key) != 0) {
+    CDVPluginResult * openErrorResult =
+      [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR
+                        messageAsString: @"key error"];
     [self.commandDelegate sendPluginResult: openErrorResult
                                 callbackId: commandInfo.callbackId];
   } else {
